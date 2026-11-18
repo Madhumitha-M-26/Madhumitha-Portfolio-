@@ -1,0 +1,43 @@
+name: Deployment Notification
+
+on:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types: [completed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report deployment success
+        if: github.event.workflow_run.conclusion == 'success'
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          echo "Deployment successful!"
+          echo "Site: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          if [ -n "$WEBHOOK_URL" ]; then
+            curl --fail --silent --show-error \
+              -X POST \
+              -H "Content-type: application/json" \
+              --data '{"text":"Madhumitha portfolio deployment succeeded."}' \
+              "$WEBHOOK_URL"
+          else
+            echo "No notification webhook configured; skipping external notification."
+          fi
+
+      - name: Report deployment failure
+        if: github.event.workflow_run.conclusion == 'failure'
+        env:
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          echo "Deployment failed. Check the Actions tab."
+          if [ -n "$WEBHOOK_URL" ]; then
+            curl --fail --silent --show-error \
+              -X POST \
+              -H "Content-type: application/json" \
+              --data '{"text":"Madhumitha portfolio deployment failed. Please inspect GitHub Actions."}' \
+              "$WEBHOOK_URL"
+          else
+            echo "No notification webhook configured; check GitHub Actions."
+          fi
