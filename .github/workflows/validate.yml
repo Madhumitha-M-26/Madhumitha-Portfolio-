@@ -20,10 +20,10 @@ jobs:
 
       - name: Install validation tools
         run: |
-          npm install --global htmlhint csslint
+          npm install --global htmlhint stylelint
 
       - name: Validate HTML
         run: htmlhint "*.html" --config .htmlhintrc
 
-      - name: Validate CSS
-        run: csslint css/*.css --quiet
+      - name: Validate CSS (stylelint)
+        run: stylelint "css/*.css" --config .stylelintrc.json
